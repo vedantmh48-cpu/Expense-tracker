@@ -263,7 +263,7 @@ git --version
 
 ```bash
 git clone https://github.com/vedantmh48-cpu/Expense-tracker.git
-cd Expense-tracker/et
+cd Expense-tracker
 ```
 
 **2. Install dependencies**
@@ -279,6 +279,8 @@ npm start
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser. The app hot-reloads on file changes.
+
+> 💡 The root `package.json` automatically proxies all commands to the `et/` app folder, so you can run `npm install`, `npm start`, `npm run build`, and `npm run deploy` directly from the repository root. Alternatively, you can `cd et` and run the same commands there.
 
 ---
 

@@ -1,0 +1,13 @@
+{
+  "name": "expense-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RupeeFlow - Smart Personal Expense Tracker (root wrapper)",
+  "scripts": {
+    "install": "npm install --prefix et",
+    "start": "npm start --prefix et",
+    "build": "npm run build --prefix et",
+    "test": "npm test --prefix et",
+    "deploy": "npm run deploy --prefix et"
+  }
+}
