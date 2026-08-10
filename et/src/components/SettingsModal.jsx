@@ -46,8 +46,24 @@ export const SettingsModal = ({ isOpen, onClose }) => {
     setError('');
     setMessage('');
 
-    if (newPassword.length < 6) {
-      setError('New password must be at least 6 characters.');
+    if (newPassword.length < 8) {
+      setError('New password must be at least 8 characters.');
+      return;
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      setError('Password must contain at least one uppercase letter.');
+      return;
+    }
+    if (!/[a-z]/.test(newPassword)) {
+      setError('Password must contain at least one lowercase letter.');
+      return;
+    }
+    if (!/\d/.test(newPassword)) {
+      setError('Password must contain at least one number.');
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+      setError('Password must contain at least one special character (!@#$%^&* etc).');
       return;
     }
     if (newPassword !== confirmNewPassword) {

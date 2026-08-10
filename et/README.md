@@ -1,70 +1,127 @@
-# Getting Started with Create React App
+# 💰 RupeeFlow — Smart Personal Expense Tracker
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, premium personal expense and cash flow tracker built specifically for Indian users. Track UPI payments, SIP investments, house rent, and daily expenses with intelligent analytics.
 
-## Available Scripts
+## 🚀 Live Demo
 
-In the project directory, you can run:
+**[Visit RupeeFlow](https://vedantmh48-cpu.github.io/Expense-tracker)**
 
-### `npm start`
+## ✨ Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 📊 Dashboard
+- Real-time financial overview with animated gradient hero banner
+- Summary cards for balance, income, expenses, and budget tracking
+- Budget progress bars with color warnings (green → yellow → red)
+- Recent activity feed with categorized transactions
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 📈 Analytics
+- Deep spending pattern analysis with interactive charts
+- Income vs. expense breakdown visualization
+- Category-wise spending insights
 
-### `npm test`
+### 📋 Activity & Transactions
+- Full transaction history with search functionality
+- Advanced filtering (type, category, payment method, date range)
+- Sort by date or amount
+- Add, edit, and delete transactions
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### ⚙️ Settings
+- **Profile** — Update name and email
+- **Password** — Change password with strength validation
+- **Budget** — Set and manage monthly budget
+- **Categories** — Create custom categories
+- **Appearance** — Dark/light theme toggle, currency options
+- **Notifications** — Toggle alerts and reports
+- **Data & Export** — PDF reports, JSON import/export, data reset
 
-### `npm run build`
+### 🔐 Authentication
+- Secure local registration and login
+- Password strength requirements (8+ chars, uppercase, lowercase, numbers, special chars)
+- Real-time password validation with visual feedback
+- 100% private — data stays in your browser
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🎨 Design
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Premium dark theme** with glassmorphism effects
+- **Animated backgrounds** with floating orbs and gradients
+- **Live notifications** dropdown with smart alerts
+- **Responsive design** — Works on all devices
+- **Mobile bottom navigation** for app-like mobile experience
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🛠️ Tech Stack
 
-### `npm run eject`
+- **React 19** — UI framework
+- **React Router** — Page navigation
+- **Recharts** — Interactive charts
+- **Lucide React** — Beautiful icons
+- **jsPDF** — PDF report generation
+- **Local Storage** — Data persistence
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 📦 Installation
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+# Clone the repository
+git clone https://github.com/vedantmh48-cpu/Expense-tracker.git
+cd Expense-tracker/et
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# Install dependencies
+npm install
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+# Start development server
+npm start
 
-## Learn More
+# Build for production
+npm run build
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+# Deploy to GitHub Pages
+npm run deploy
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🗂️ Project Structure
 
-### Code Splitting
+```
+et/
+├── public/
+│   ├── rupeeflow-logo.svg    # Custom app logo
+│   ├── index.html
+│   └── manifest.json
+├── src/
+│   ├── components/           # Reusable UI components
+│   │   ├── AuthPage.jsx      # Login/Register form
+│   │   ├── TransactionTable.jsx
+│   │   ├── SummaryCards.jsx
+│   │   ├── SettingsModal.jsx
+│   │   └── ...
+│   ├── context/
+│   │   ├── AuthContext.js    # Authentication state
+│   │   └── ExpenseContext.js # Expense/transaction state
+│   ├── layout/
+│   │   └── AppLayout.jsx     # Main app shell (sidebar + header)
+│   ├── pages/
+│   │   ├── DashboardPage.jsx
+│   │   ├── AnalyticsPage.jsx
+│   │   ├── ActivityPage.jsx
+│   │   ├── SettingsPage.jsx
+│   │   ├── HowToUsePage.jsx
+│   │   └── ContactPage.jsx
+│   ├── utils/
+│   │   └── formatters.js     # Formatting helpers
+│   ├── App.js                # Main app with routing
+│   └── index.css             # Global styles
+└── package.json
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 📱 Mobile Support
 
-### Analyzing the Bundle Size
+- Collapsible sidebar with hamburger menu
+- Fixed bottom navigation bar
+- Responsive layout for all screen sizes
+- Touch-friendly UI elements
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 📄 License
 
-### Making a Progressive Web App
+This project is open source and available for personal and educational use.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Made with ❤️ for India**

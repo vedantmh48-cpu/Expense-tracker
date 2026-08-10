@@ -4,9 +4,9 @@ import { CATEGORIES, PAYMENT_METHODS, formatINR, formatDate } from '../utils/for
 import { CategoryIcon } from './CategoryIcon';
 import { Search, Filter, Edit2, Trash2, Calendar, FileSpreadsheet, PlusCircle } from 'lucide-react';
 
-export const TransactionTable = () => {
+export const TransactionTable = ({ transactions: propTransactions }) => {
   const {
-    transactions,
+    transactions: contextTransactions,
     searchTerm,
     setSearchTerm,
     selectedCategory,
@@ -21,6 +21,8 @@ export const TransactionTable = () => {
     deleteTransaction,
     setIsTransactionModalOpen,
   } = useExpense();
+
+  const transactions = propTransactions || contextTransactions;
 
   // Filter Logic
   const filteredTransactions = transactions.filter((t) => {
@@ -76,15 +78,15 @@ export const TransactionTable = () => {
   });
 
   return (
-    <div id="activity" className="glass-card p-5 mb-12 scroll-mt-24">
+    <div className="section-card">
       {/* Header & Filter Controls Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#E2E8F0]/40">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--border-color)]">
         <div>
-          <h3 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-[#4F46E5]" />
+          <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+            <FileSpreadsheet className="w-5 h-5 text-[var(--accent-primary)]" />
             Transaction History & Activity Feed
           </h3>
-          <p className="text-xs text-[#64748B]">
+          <p className="text-xs text-[var(--text-muted)]">
             Showing {filteredTransactions.length} of {transactions.length} total records
           </p>
         </div>
@@ -93,7 +95,7 @@ export const TransactionTable = () => {
         <div className="flex flex-wrap items-center gap-2">
           {/* Search Bar */}
           <div className="relative min-w-[200px] flex-1 sm:flex-initial">
-            <Search className="w-4 h-4 text-[#64748B] absolute left-3 top-3" />
+            <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-3" />
             <input
               type="text"
               placeholder="Search notes, amount..."
@@ -243,7 +245,7 @@ export const TransactionTable = () => {
                           <CategoryIcon iconId={catMeta.iconId || t.category} className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="font-semibold text-xs text-[#0F172A]">{catMeta.name}</div>
+                          <div className="font-semibold text-xs text-[var(--text-primary)]">{catMeta.name}</div>
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded-md font-bold uppercase ${isIncome ? 'badge-income' : 'badge-expense'
                               }`}
@@ -256,23 +258,23 @@ export const TransactionTable = () => {
 
                     {/* Note / Description */}
                     <td>
-                      <div className="text-xs text-[#0F172A] font-medium max-w-xs truncate">
+                      <div className="text-xs text-[var(--text-primary)] font-medium max-w-xs truncate">
                         {t.note || 'No note'}
                       </div>
                     </td>
 
                     {/* Date */}
                     <td>
-                      <div className="flex items-center gap-1 text-xs text-[#64748B]">
-                        <Calendar className="w-3.5 h-3.5 text-[#64748B]" />
+                      <div className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
+                        <Calendar className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                         <span>{formatDate(t.date)}</span>
                       </div>
                     </td>
 
                     {/* Payment Mode & UPI Tag */}
                     <td>
-                      <div className="flex items-center gap-1.5 text-xs text-[#0F172A] font-medium">
-                        <CategoryIcon iconId={pmMeta.iconId || 'pm_credit'} className="w-3.5 h-3.5 text-[#64748B]" />
+                      <div className="flex items-center gap-1.5 text-xs text-[var(--text-primary)] font-medium">
+                        <CategoryIcon iconId={pmMeta.iconId || 'pm_credit'} className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                         <span className="capitalize">
                           {t.paymentMethod === 'upi' && t.upiTag ? t.upiTag : t.paymentMethod}
                         </span>
@@ -282,7 +284,7 @@ export const TransactionTable = () => {
                     {/* Amount */}
                     <td className="text-right">
                       <span
-                        className={`text-sm font-extrabold tracking-tight ${isIncome ? 'text-[#10B981]' : 'text-[#F43F5E]'
+                        className={`text-sm font-extrabold tracking-tight ${isIncome ? 'text-[var(--accent-success)]' : 'text-[var(--accent-danger)]'
                           }`}
                       >
                         {isIncome ? '+' : '-'} {formatINR(t.amount)}
@@ -294,10 +296,10 @@ export const TransactionTable = () => {
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => openEditModal(t)}
-                          className="p-1.5 rounded-lg text-[#64748B] hover:text-[#4F46E5] hover:bg-[#F8FAFC] transition"
+                          className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-secondary)] transition"
                           title="Edit Transaction"
                         >
-                          <Edit2 className="w-4 h-4 text-[#4F46E5]" />
+                          <Edit2 className="w-4 h-4 text-[var(--accent-primary)]" />
                         </button>
                         <button
                           onClick={() => {
@@ -305,10 +307,10 @@ export const TransactionTable = () => {
                               deleteTransaction(t.id);
                             }
                           }}
-                          className="p-1.5 rounded-lg text-[#64748B] hover:text-[#F43F5E] hover:bg-[#F8FAFC] transition"
+                          className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--accent-danger)] hover:bg-[var(--bg-secondary)] transition"
                           title="Delete Transaction"
                         >
-                          <Trash2 className="w-4 h-4 text-[#F43F5E]" />
+                          <Trash2 className="w-4 h-4 text-[var(--accent-danger)]" />
                         </button>
                       </div>
                     </td>

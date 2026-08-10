@@ -168,24 +168,23 @@
 flowchart TD
     A([👤 User]) --> B[AuthPage\nLogin / Register]
     B -->|Stored in localStorage| C{AuthContext}
-    C -->|Authenticated| D[App Shell]
-    D --> E[Navbar]
-    D --> F[Header / Hero]
-    D --> G[Main Sections]
+    C -->|Authenticated| D[AppRouting\nReact Router]
+    D --> E[AppLayout\nSidebar + Header]
+    E --> F[Pages]
 
-    G --> G1[📊 Dashboard\nSummaryCards + SmartInsights]
-    G --> G2[📈 Analytics\nRecharts Visualizations]
-    G --> G3[📋 Activity Feed\nTransactionTable]
-    G --> G4[📖 How to Use]
-    G --> G5[📬 Contact]
+    F --> F1[📊 DashboardPage\nHero + SummaryCards + SmartInsights]
+    F --> F2[📈 AnalyticsPage\nRecharts Visualizations]
+    F --> F3[📋 ActivityPage\nFilters + TransactionTable]
+    F --> F4[⚙️ SettingsPage\nProfile, Budget, Categories, Theme]
+    F --> F5[📖 HowToUsePage]
+    F --> F6[📬 ContactPage]
 
-    G1 & G2 & G3 -->|Read/Write| H[(ExpenseContext\nlocalStorage)]
+    F1 & F2 & F3 -->|Read/Write| H[(ExpenseContext\nlocalStorage)]
 
-    D --> I[Modals]
+    E --> I[Modals]
     I --> I1[TransactionModal]
     I --> I2[BudgetModal]
     I --> I3[ExportImportModal]
-    I --> I4[SettingsModal]
 
     I1 & I2 & I3 -->|Mutate State| H
 
@@ -206,6 +205,7 @@ flowchart TD
 | Technology | Purpose |
 |---|---|
 | ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black) | UI framework with hooks & context |
+| ![React Router](https://img.shields.io/badge/React_Router-7-CA4245?style=flat-square&logo=reactrouter&logoColor=white) | Page-based navigation |
 | ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) | Utility-first styling |
 | ![Lucide React](https://img.shields.io/badge/Lucide_React-F97316?style=flat-square&logo=lucide&logoColor=white) | Icon system |
 | ![Recharts](https://img.shields.io/badge/Recharts-FF6384?style=flat-square&logo=chartdotjs&logoColor=white) | Interactive data visualizations |
@@ -296,15 +296,15 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. The app hot
 Expense-tracker/
 └── et/
     ├── public/
-    │   └── index.html
+    │   ├── rupeeflow-logo.svg       # Custom RupeeFlow logo
+    │   ├── index.html
+    │   └── manifest.json            # PWA manifest
     ├── src/
     │   ├── components/
     │   │   ├── AnalyticsCharts.jsx   # Recharts visualizations
     │   │   ├── AuthPage.jsx          # Login / Register UI
     │   │   ├── BudgetModal.jsx       # Monthly budget setter
-    │   │   ├── ExportImportModal.jsx # PDF & CSV export
-    │   │   ├── Header.jsx            # Hero section
-    │   │   ├── Navbar.jsx            # Frosted glass navbar
+    │   │   ├── ExportImportModal.jsx # PDF & JSON export
     │   │   ├── SmartInsights.jsx     # AI-style tips
     │   │   ├── SummaryCards.jsx      # KPI cards
     │   │   ├── TransactionModal.jsx  # Add/edit transactions
@@ -312,9 +312,19 @@ Expense-tracker/
     │   ├── context/
     │   │   ├── AuthContext.js        # Auth state & localStorage
     │   │   └── ExpenseContext.js     # Transactions & budget state
+    │   ├── layout/
+    │   │   └── AppLayout.jsx         # App shell (sidebar + header)
+    │   ├── pages/
+    │   │   ├── DashboardPage.jsx     # Dashboard overview
+    │   │   ├── AnalyticsPage.jsx     # Analytics view
+    │   │   ├── ActivityPage.jsx      # Transaction feed
+    │   │   ├── SettingsPage.jsx      # Full settings panel
+    │   │   ├── HowToUsePage.jsx      # Guide
+    │   │   └── ContactPage.jsx       # Contact form
     │   ├── utils/
     │   │   └── formatters.js         # INR currency formatter
-    │   └── App.js
+    │   ├── App.js                    # Router-based app
+    │   └── index.css                 # Global styles & themes
     └── package.json
 ```
 

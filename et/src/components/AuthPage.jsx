@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User, Eye, EyeOff, LogIn, UserPlus, ShieldCheck, TrendingUp, Wallet } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, LogIn, UserPlus, ShieldCheck, TrendingUp, Wallet, Check, X, AlertCircle } from 'lucide-react';
 
 export const AuthPage = () => {
   const { login, register } = useAuth();
@@ -13,6 +13,27 @@ export const AuthPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Password validation conditions
+  const passwordConditions = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /\d/.test(password),
+    special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  };
+
+  const passedCount = Object.values(passwordConditions).filter(Boolean).length;
+
+  const getPasswordStrength = () => {
+    if (passedCount === 0) return { label: 'Weak', color: 'var(--accent-danger)', width: '0%' };
+    if (passedCount <= 2) return { label: 'Weak', color: 'var(--accent-danger)', width: '25%' };
+    if (passedCount <= 3) return { label: 'Fair', color: 'var(--accent-warning)', width: '50%' };
+    if (passedCount <= 4) return { label: 'Good', color: 'var(--accent-primary)', width: '75%' };
+    return { label: 'Strong', color: 'var(--accent-success)', width: '100%' };
+  };
+
+  const strength = getPasswordStrength();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
@@ -22,13 +43,40 @@ export const AuthPage = () => {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     if (!isLogin) {
       if (!name) {
         setError('Please enter your name.');
         return;
       }
-      if (password.length < 6) {
-        setError('Password must be at least 6 characters long.');
+      if (name.trim().length < 2) {
+        setError('Name must be at least 2 characters.');
+        return;
+      }
+      // Password conditions
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters long.');
+        return;
+      }
+      if (!passwordConditions.uppercase) {
+        setError('Password must contain at least one uppercase letter.');
+        return;
+      }
+      if (!passwordConditions.lowercase) {
+        setError('Password must contain at least one lowercase letter.');
+        return;
+      }
+      if (!passwordConditions.number) {
+        setError('Password must contain at least one number.');
+        return;
+      }
+      if (!passwordConditions.special) {
+        setError('Password must contain at least one special character (!@#$%^&* etc).');
         return;
       }
       if (password !== confirmPassword) {
@@ -51,184 +99,218 @@ export const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-[#4F46E5]/10 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-[#3B82F6]/10 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#4F46E5]/5 blur-3xl pointer-events-none" />
+    <div className="auth-page">
+      {/* Animated Background */}
+      <div className="auth-bg-blobs">
+        <div className="auth-bg-orbs orb-1" />
+        <div className="auth-bg-orbs orb-2" />
+        <div className="auth-bg-orbs orb-3" />
+        <div className="auth-bg-grid" />
+      </div>
 
-      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      <div className="auth-container">
         {/* Left Side - Branding */}
-        <div className="hidden lg:block">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-[#4F46E5] flex items-center justify-center text-[#FFFFFF] text-2xl font-extrabold shadow-lg">
-              ₹
+        <div className="auth-branding">
+          <div className="auth-logo">
+            <div className="auth-logo-icon">
+              <Wallet className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-2xl font-extrabold tracking-tight text-[#0F172A]">₹upeeFlow</span>
-              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-[#4F46E5]/10 text-[#4F46E5] border border-[#4F46E5]/20 font-bold align-middle">
-                INDIA
-              </span>
+              <span className="auth-logo-name">RupeeFlow</span>
+              <span className="auth-logo-badge">INDIA</span>
             </div>
           </div>
 
-          <h1 className="text-4xl font-extrabold text-[#0F172A] tracking-tight leading-tight mb-4">
+          <h1 className="auth-title">
             Track Every Rupee.<br />
-            <span className="bg-gradient-to-r from-[#4F46E5] to-[#3B82F6] bg-clip-text text-transparent">
-              Grow Every Day.
-            </span>
+            <span className="auth-title-gradient">Grow Every Day.</span>
           </h1>
 
-          <p className="text-[#64748B] text-sm leading-relaxed mb-8 max-w-md">
+          <p className="auth-subtitle">
             Smart personal expense & cash flow analytics built for India. Track UPI payments,
             SIP investments, house rent, and daily expenses with intelligent insights.
           </p>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/70 border border-[#E2E8F0]/50 backdrop-blur-sm">
-              <div className="p-2.5 rounded-xl bg-[#10B981]/15 text-[#10B981]">
+          <div className="auth-features">
+            <div className="auth-feature">
+              <div className="auth-feature-icon success">
                 <Wallet className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#0F172A]">Smart Budget Tracking</h4>
-                <p className="text-xs text-[#64748B]">Set monthly limits and get real-time alerts</p>
+                <h4>Smart Budget Tracking</h4>
+                <p>Set monthly limits and get real-time alerts</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/70 border border-[#E2E8F0]/50 backdrop-blur-sm">
-              <div className="p-2.5 rounded-xl bg-[#4F46E5]/10 text-[#4F46E5]">
+            <div className="auth-feature">
+              <div className="auth-feature-icon primary">
                 <TrendingUp className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#0F172A]">Powerful Analytics</h4>
-                <p className="text-xs text-[#64748B]">Visualize spending patterns with interactive charts</p>
+                <h4>Powerful Analytics</h4>
+                <p>Visualize spending patterns with interactive charts</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/70 border border-[#E2E8F0]/50 backdrop-blur-sm">
-              <div className="p-2.5 rounded-xl bg-[#4F46E5]/10 text-[#4F46E5]">
+            <div className="auth-feature">
+              <div className="auth-feature-icon primary">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#0F172A]">100% Private</h4>
-                <p className="text-xs text-[#64748B]">Your data stays in your browser, always</p>
+                <h4>100% Private</h4>
+                <p>Your data stays in your browser, always</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Right Side - Auth Form */}
-        <div className="bg-white rounded-3xl border border-[#E2E8F0]/50 shadow-xl p-6 sm:p-8 w-full max-w-md mx-auto">
+        <div className="auth-form-card">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-[#4F46E5] flex items-center justify-center text-[#FFFFFF] text-lg font-extrabold">
-              ₹
+          <div className="auth-mobile-logo">
+            <div className="auth-logo-icon">
+              <Wallet className="w-5 h-5" />
             </div>
-            <span className="text-xl font-extrabold tracking-tight text-[#0F172A]">₹upeeFlow</span>
+            <span className="auth-logo-name">RupeeFlow</span>
           </div>
 
           {/* Tabs */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]/40 mb-6">
+          <div className="auth-tabs">
             <button
               onClick={() => { setIsLogin(true); setError(''); }}
-              className={`py-2.5 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-1.5 ${isLogin
-                ? 'bg-[#4F46E5] text-white shadow-sm'
-                : 'text-[#0F172A] hover:bg-[#E2E8F0]/30'
-                }`}
+              className={`auth-tab ${isLogin ? 'active' : ''}`}
             >
               <LogIn className="w-4 h-4" /> Login
             </button>
             <button
               onClick={() => { setIsLogin(false); setError(''); }}
-              className={`py-2.5 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-1.5 ${!isLogin
-                ? 'bg-[#4F46E5] text-white shadow-sm'
-                : 'text-[#0F172A] hover:bg-[#E2E8F0]/30'
-                }`}
+              className={`auth-tab ${!isLogin ? 'active' : ''}`}
             >
               <UserPlus className="w-4 h-4" /> Register
             </button>
           </div>
 
-          <h2 className="text-2xl font-extrabold text-[#0F172A] tracking-tight mb-1">
+          <h2 className="auth-form-title">
             {isLogin ? 'Welcome Back!' : 'Create Your Account'}
           </h2>
-          <p className="text-sm text-[#64748B] mb-6">
+          <p className="auth-form-subtitle">
             {isLogin
               ? 'Login to access your expense tracker'
-              : 'Join ₹upeeFlow and start tracking your finances'}
+              : 'Join RupeeFlow and start tracking your finances'}
           </p>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-semibold">
-              {error}
+            <div className="alert-message error">
+              <AlertCircle className="w-4 h-4" /> {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="auth-form">
             {!isLogin && (
-              <div>
+              <div className="form-group">
                 <label className="form-label">Full Name</label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-[#64748B] absolute left-3 top-3.5" />
+                <div className="input-with-icon">
+                  <User className="w-4 h-4" />
                   <input
                     type="text"
                     placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="form-input pl-10 text-sm"
+                    className="form-input"
                   />
                 </div>
               </div>
             )}
 
-            <div>
+            <div className="form-group">
               <label className="form-label">Email Address</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-[#64748B] absolute left-3 top-3.5" />
+              <div className="input-with-icon">
+                <Mail className="w-4 h-4" />
                 <input
                   type="email"
                   required
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="form-input pl-10 text-sm"
+                  className="form-input"
                 />
               </div>
             </div>
 
-            <div>
+            <div className="form-group">
               <label className="form-label">Password</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-[#64748B] absolute left-3 top-3.5" />
+              <div className="input-with-icon">
+                <Lock className="w-4 h-4" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  placeholder={isLogin ? 'Enter your password' : 'Minimum 6 characters'}
+                  placeholder={isLogin ? 'Enter your password' : 'Create a strong password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="form-input pl-10 pr-10 text-sm"
+                  className="form-input"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-[#64748B] hover:text-[#4F46E5]"
+                  className="password-toggle"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+
+              {!isLogin && password && (
+                <div className="password-strength-container">
+                  <div className="password-strength-bar">
+                    <div
+                      className="password-strength-fill"
+                      style={{ width: strength.width, backgroundColor: strength.color }}
+                    />
+                  </div>
+                  <div className="password-strength-label" style={{ color: strength.color }}>
+                    {strength.label} Password
+                  </div>
+                  <div className="password-conditions">
+                    <div className={`password-condition ${passwordConditions.length ? 'met' : ''}`}>
+                      {passwordConditions.length ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                      <span>8+ characters</span>
+                    </div>
+                    <div className={`password-condition ${passwordConditions.uppercase ? 'met' : ''}`}>
+                      {passwordConditions.uppercase ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                      <span>Uppercase (A-Z)</span>
+                    </div>
+                    <div className={`password-condition ${passwordConditions.lowercase ? 'met' : ''}`}>
+                      {passwordConditions.lowercase ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                      <span>Lowercase (a-z)</span>
+                    </div>
+                    <div className={`password-condition ${passwordConditions.number ? 'met' : ''}`}>
+                      {passwordConditions.number ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                      <span>Number (0-9)</span>
+                    </div>
+                    <div className={`password-condition ${passwordConditions.special ? 'met' : ''}`}>
+                      {passwordConditions.special ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                      <span>Special character</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {!isLogin && (
-              <div>
+              <div className="form-group">
                 <label className="form-label">Confirm Password</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-[#64748B] absolute left-3 top-3.5" />
+                <div className="input-with-icon">
+                  <Lock className="w-4 h-4" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     placeholder="Re-enter your password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="form-input pl-10 pr-10 text-sm"
+                    className="form-input"
                   />
+                  {confirmPassword && (
+                    <span className={`password-match-indicator ${password === confirmPassword ? 'match' : 'no-match'}`}>
+                      {password === confirmPassword ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -236,38 +318,38 @@ export const AuthPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary justify-center py-3 text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary auth-submit"
             >
               {loading ? (
                 <span className="spinner" />
               ) : isLogin ? (
                 <>
-                  <LogIn className="w-4 h-4 text-[#FFFFFF]" />
+                  <LogIn className="w-4 h-4" />
                   <span>Login to Dashboard</span>
                 </>
               ) : (
                 <>
-                  <UserPlus className="w-4 h-4 text-[#FFFFFF]" />
+                  <UserPlus className="w-4 h-4" />
                   <span>Create Account</span>
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-[#E2E8F0]/40 text-center">
-            <p className="text-xs text-[#64748B]">
+          <div className="auth-switch">
+            <p>
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button
                 onClick={() => { setIsLogin(!isLogin); setError(''); }}
-                className="text-[#4F46E5] font-bold hover:underline"
+                className="auth-switch-btn"
               >
                 {isLogin ? 'Register here' : 'Login here'}
               </button>
             </p>
           </div>
 
-          <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] text-[#64748B]">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
+          <div className="auth-privacy">
+            <ShieldCheck className="w-3.5 h-3.5" />
             <span>Your data is stored locally in your browser</span>
           </div>
         </div>
