@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useExpense } from '../context/ExpenseContext';
 import { Target, X, Check } from 'lucide-react';
 
 export const BudgetModal = () => {
   const { isBudgetModalOpen, setIsBudgetModalOpen, monthlyBudget, setMonthlyBudget } = useExpense();
   const [budgetVal, setBudgetVal] = useState(monthlyBudget || 50000);
+
+  useEffect(() => {
+    setBudgetVal(monthlyBudget || 50000);
+  }, [monthlyBudget, isBudgetModalOpen]);
 
   if (!isBudgetModalOpen) return null;
 

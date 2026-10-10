@@ -1,9 +1,6 @@
 import React from 'react';
 import { useExpense } from '../context/ExpenseContext';
 import { SmartInsights } from '../components/SmartInsights';
-import { TransactionModal } from '../components/TransactionModal';
-import { BudgetModal } from '../components/BudgetModal';
-import { ExportImportModal } from '../components/ExportImportModal';
 import { TrendingUp, CreditCard, ArrowUpRight, ArrowDownRight, Wallet, PiggyBank, Activity, Sparkles, PlusCircle } from 'lucide-react';
 
 export const DashboardPage = () => {
@@ -157,9 +154,6 @@ export const DashboardPage = () => {
         </div>
       </div>
 
-      <TransactionModal />
-      <BudgetModal />
-      <ExportImportModal />
     </div>
   );
 };

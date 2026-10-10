@@ -69,9 +69,7 @@ export const TransactionModal = () => {
     setAmount((prev) => (Number(prev) || 0) + val);
   };
 
-  const filteredCategories = CATEGORIES.filter(
-    (c) => c.type === type || c.id === 'other' || (type === 'expense' && c.type === 'expense')
-  );
+  const filteredCategories = CATEGORIES.filter((c) => c.type === type || c.id === 'other');
 
   return (
     <div className="modal-overlay">
