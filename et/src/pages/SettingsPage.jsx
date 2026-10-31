@@ -27,7 +27,6 @@ export const SettingsPage = () => {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem('rupeeflow_theme') || 'dark');
   const [currency, setCurrency] = useState('INR');
   const [notifications, setNotifications] = useState({
     budgetAlerts: true,
@@ -41,11 +40,6 @@ export const SettingsPage = () => {
   });
   const [newCategory, setNewCategory] = useState('');
   const [newCategoryType, setNewCategoryType] = useState('expense');
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('rupeeflow_theme', theme);
-  }, [theme]);
 
   useEffect(() => {
     localStorage.setItem('rupeeflow_custom_categories', JSON.stringify(customCategories));
@@ -531,22 +525,8 @@ export const SettingsPage = () => {
                     <Palette className="w-5 h-5" />
                   </div>
                   <div className="appearance-option-info">
-                    <span className="appearance-option-label">Theme</span>
-                    <span className="appearance-option-desc">Choose between dark and light mode</span>
-                  </div>
-                  <div className="theme-toggle">
-                    <button
-                      onClick={() => setTheme('dark')}
-                      className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
-                    >
-                      Dark
-                    </button>
-                    <button
-                      onClick={() => setTheme('light')}
-                      className={`theme-option ${theme === 'light' ? 'active' : ''}`}
-                    >
-                      Light
-                    </button>
+                    <span className="appearance-option-label">Interface</span>
+                    <span className="appearance-option-desc">RupeeFlow uses a clean, easy-to-read appearance.</span>
                   </div>
                 </div>
                 <div className="appearance-option">

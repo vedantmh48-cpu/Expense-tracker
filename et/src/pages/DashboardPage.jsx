@@ -13,6 +13,25 @@ export const DashboardPage = () => {
 
   const recentTransactions = transactions.slice(0, 5);
   const currentMonth = new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  const flowMonths = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setMonth(date.getMonth() - (5 - index));
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const net = transactions
+      .filter((tx) => (tx.date || '').startsWith(key))
+      .reduce((sum, tx) => sum + (tx.type === 'income' ? 1 : -1) * Number(tx.amount), 0);
+    return { label: date.toLocaleDateString('en-IN', { month: 'short' }), net };
+  });
+  const flowMin = Math.min(0, ...flowMonths.map((month) => month.net));
+  const flowRange = Math.max(1, ...flowMonths.map((month) => month.net)) - flowMin;
+  const flowCoordinates = flowMonths.map((month, index) => ({
+    x: index * 84,
+    y: 154 - ((month.net - flowMin) / flowRange) * 122,
+  }));
+  const flowPath = flowCoordinates.map(({ x, y }, index) => `${index === 0 ? 'M' : 'L'}${x} ${y}`).join(' ');
+  const flowAreaPath = `${flowPath} L420 178 L0 178 Z`;
+  const latestFlowPoint = flowCoordinates[flowCoordinates.length - 1];
 
   return (
     <div className="page-container">
@@ -40,10 +59,32 @@ export const DashboardPage = () => {
             Add Transaction
           </button>
         </div>
-        <div className="hero-decoration">
-          <div className="hero-orb orb-a" />
-          <div className="hero-orb orb-b" />
-          <div className="hero-orb orb-c" />
+        <div className="hero-visual" aria-hidden="true">
+          <div className="hero-visual-glow" />
+          <div className="hero-chart-frame">
+            <div className="hero-chart-heading">
+              <span className="hero-chart-dot" />
+              <span>Monthly net flow</span>
+              <span className="hero-chart-period">LAST 6 MONTHS</span>
+            </div>
+            <svg className="hero-chart" viewBox="0 0 420 190" fill="none" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="heroArea" x1="210" y1="25" x2="210" y2="190" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#80E6B2" stopOpacity=".28" />
+                  <stop offset="1" stopColor="#80E6B2" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path className="hero-chart-area" d={flowAreaPath} fill="url(#heroArea)" />
+              <path className="hero-chart-line" d={flowPath} pathLength="1" stroke="#8CE7B7" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx={latestFlowPoint.x} cy={latestFlowPoint.y} r="5" fill="#B8F5D2" />
+              <circle cx={latestFlowPoint.x} cy={latestFlowPoint.y} r="11" stroke="#B8F5D2" strokeOpacity=".35" />
+            </svg>
+            <div className="hero-chart-foot"><span>{flowMonths[0].label}</span><span>NET CASH FLOW</span><span>{flowMonths[5].label}</span></div>
+          </div>
+          <div className="hero-float-card">
+            <span className="hero-float-icon"><TrendingUp className="w-4 h-4" /></span>
+            <span><strong>Stay on track</strong><small>Your finances, at a glance</small></span>
+          </div>
         </div>
       </div>
 
@@ -54,11 +95,11 @@ export const DashboardPage = () => {
             <Wallet className="w-6 h-6" />
           </div>
           <div className="summary-card-content">
-            <span className="summary-card-label">Total Balance</span>
+            <span className="summary-card-label">Transactions</span>
             <span className="summary-card-value">
-              ₹{Math.abs(balance).toLocaleString('en-IN')}
+              {transactions.length.toLocaleString('en-IN')}
             </span>
-            <span className="summary-card-sub">{balance >= 0 ? 'Positive' : 'Negative'} balance</span>
+            <span className="summary-card-sub">Across your account</span>
           </div>
         </div>
 

@@ -175,12 +175,14 @@ export const AuthPage = () => {
           {/* Tabs */}
           <div className="auth-tabs">
             <button
+              type="button"
               onClick={() => { setIsLogin(true); setError(''); }}
               className={`auth-tab ${isLogin ? 'active' : ''}`}
             >
               <LogIn className="w-4 h-4" /> Login
             </button>
             <button
+              type="button"
               onClick={() => { setIsLogin(false); setError(''); }}
               className={`auth-tab ${!isLogin ? 'active' : ''}`}
             >
@@ -189,12 +191,12 @@ export const AuthPage = () => {
           </div>
 
           <h2 className="auth-form-title">
-            {isLogin ? 'Welcome Back!' : 'Create Your Account'}
+            {isLogin ? 'Welcome back' : 'Create your account'}
           </h2>
           <p className="auth-form-subtitle">
             {isLogin
-              ? 'Login to access your expense tracker'
-              : 'Join RupeeFlow and start tracking your finances'}
+              ? 'Sign in to see your complete financial picture.'
+              : 'A clearer view of your money starts here.'}
           </p>
 
           {error && (
@@ -206,11 +208,14 @@ export const AuthPage = () => {
           <form onSubmit={handleSubmit} className="auth-form">
             {!isLogin && (
               <div className="form-group">
-                <label className="form-label">Full Name</label>
+                <label className="form-label" htmlFor="auth-name">Full name</label>
                 <div className="input-with-icon">
                   <User className="w-4 h-4" />
                   <input
                     type="text"
+                    id="auth-name"
+                    autoComplete="name"
+                    required
                     placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -221,11 +226,13 @@ export const AuthPage = () => {
             )}
 
             <div className="form-group">
-              <label className="form-label">Email Address</label>
+              <label className="form-label" htmlFor="auth-email">Email address</label>
               <div className="input-with-icon">
                 <Mail className="w-4 h-4" />
                 <input
                   type="email"
+                  id="auth-email"
+                  autoComplete="email"
                   required
                   placeholder="you@example.com"
                   value={email}
@@ -236,11 +243,13 @@ export const AuthPage = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Password</label>
+              <label className="form-label" htmlFor="auth-password">Password</label>
               <div className="input-with-icon">
                 <Lock className="w-4 h-4" />
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  id="auth-password"
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
                   required
                   placeholder={isLogin ? 'Enter your password' : 'Create a strong password'}
                   value={password}
@@ -295,11 +304,13 @@ export const AuthPage = () => {
 
             {!isLogin && (
               <div className="form-group">
-                <label className="form-label">Confirm Password</label>
+                <label className="form-label" htmlFor="auth-confirm-password">Confirm password</label>
                 <div className="input-with-icon">
                   <Lock className="w-4 h-4" />
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    id="auth-confirm-password"
+                    autoComplete="new-password"
                     required
                     placeholder="Re-enter your password"
                     value={confirmPassword}
@@ -340,6 +351,7 @@ export const AuthPage = () => {
             <p>
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button
+                type="button"
                 onClick={() => { setIsLogin(!isLogin); setError(''); }}
                 className="auth-switch-btn"
               >

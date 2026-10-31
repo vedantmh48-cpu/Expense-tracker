@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useExpense } from '../context/ExpenseContext';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { PlusCircle, Download, LogOut, User, ChevronDown, Menu, LayoutDashboard, PieChart, ListTodo, Settings, HelpCircle, MessageSquare, Bell, Search, Moon, Sun, Wallet, X, AlertTriangle, TrendingUp, TrendingDown, PiggyBank, CheckCircle } from 'lucide-react';
+import { PlusCircle, Download, LogOut, User, ChevronDown, Menu, LayoutDashboard, PieChart, ListTodo, Settings, HelpCircle, MessageSquare, Bell, Search, Wallet, X, AlertTriangle, TrendingUp, TrendingDown, PiggyBank, CheckCircle } from 'lucide-react';
 
 export const AppLayout = () => {
   const { currentUser, logout } = useAuth();
@@ -12,12 +12,6 @@ export const AppLayout = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem('rupeeflow_theme') || 'dark');
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('rupeeflow_theme', theme);
-  }, [theme]);
 
   // Generate notifications based on data
   const notifications = [];
@@ -209,14 +203,6 @@ export const AppLayout = () => {
             </div>
           </div>
           <div className="header-right">
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="header-icon-btn"
-              title="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-            
             {/* Notifications */}
             <div className="notifications-container">
               <button

@@ -25,7 +25,7 @@ export const TransactionTable = ({ transactions: propTransactions }) => {
   const transactions = propTransactions || contextTransactions;
 
   // Filter Logic
-  const filteredTransactions = transactions.filter((t) => {
+  const filteredTransactions = propTransactions ? transactions : transactions.filter((t) => {
     // 1. Search Query
     const searchLower = searchTerm.toLowerCase().trim();
     if (searchLower) {
@@ -78,9 +78,9 @@ export const TransactionTable = ({ transactions: propTransactions }) => {
   });
 
   return (
-    <div className="section-card">
+    <div className="section-card transaction-history-card">
       {/* Header & Filter Controls Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--border-color)]">
+      {!propTransactions && <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-[var(--border-color)]">
         <div>
           <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-[var(--accent-primary)]" />
@@ -156,10 +156,10 @@ export const TransactionTable = ({ transactions: propTransactions }) => {
             <option value="last_30">Last 30 Days</option>
           </select>
         </div>
-      </div>
+      </div>}
 
       {/* Table Content */}
-      <div className="overflow-x-auto">
+      <div className="transaction-table-wrap">
         {transactions.length === 0 ? (
           /* Zero State - No Transactions At All */
           <div className="zero-state">
@@ -232,7 +232,7 @@ export const TransactionTable = ({ transactions: propTransactions }) => {
                 return (
                   <tr key={t.id} className="table-row">
                     {/* Category */}
-                    <td>
+                    <td data-label="Category">
                       <div className="flex items-center gap-2.5">
                         <div
                           className="w-9 h-9 rounded-xl flex items-center justify-center border shrink-0"
@@ -257,14 +257,14 @@ export const TransactionTable = ({ transactions: propTransactions }) => {
                     </td>
 
                     {/* Note / Description */}
-                    <td>
+                    <td data-label="Note">
                       <div className="text-xs text-[var(--text-primary)] font-medium max-w-xs truncate">
                         {t.note || 'No note'}
                       </div>
                     </td>
 
                     {/* Date */}
-                    <td>
+                    <td data-label="Date">
                       <div className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
                         <Calendar className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                         <span>{formatDate(t.date)}</span>
@@ -272,7 +272,7 @@ export const TransactionTable = ({ transactions: propTransactions }) => {
                     </td>
 
                     {/* Payment Mode & UPI Tag */}
-                    <td>
+                    <td data-label="Payment">
                       <div className="flex items-center gap-1.5 text-xs text-[var(--text-primary)] font-medium">
                         <CategoryIcon iconId={pmMeta.iconId || 'pm_credit'} className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                         <span className="capitalize">
@@ -282,7 +282,7 @@ export const TransactionTable = ({ transactions: propTransactions }) => {
                     </td>
 
                     {/* Amount */}
-                    <td className="text-right">
+                    <td data-label="Amount" className="text-right">
                       <span
                         className={`text-sm font-extrabold tracking-tight ${isIncome ? 'text-[var(--accent-success)]' : 'text-[var(--accent-danger)]'
                           }`}
@@ -292,7 +292,7 @@ export const TransactionTable = ({ transactions: propTransactions }) => {
                     </td>
 
                     {/* Actions */}
-                    <td className="text-center">
+                    <td data-label="Actions" className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => openEditModal(t)}

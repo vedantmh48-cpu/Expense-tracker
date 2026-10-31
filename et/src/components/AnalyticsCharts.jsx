@@ -1,315 +1,236 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useExpense } from '../context/ExpenseContext';
 import { CATEGORIES, PAYMENT_METHODS, formatINR } from '../utils/formatters';
 import {
-  AreaChart,
   Area,
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
+  AreaChart,
   Bar,
+  BarChart,
+  Cell,
+  CartesianGrid,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
 } from 'recharts';
-import { PieChart as PieIcon, TrendingUp, BarChart2, CreditCard, BarChart3 } from 'lucide-react';
+import { CreditCard, PieChart as PieIcon, TrendingUp, Wallet } from 'lucide-react';
+
+const chartColors = ['#59D99B', '#7AB9FF', '#EBC574', '#CB91F2', '#FF8A8A', '#59CFD2', '#F49E75', '#A5D887'];
+const paymentColors = {
+  upi: '#66DDA5',
+  credit: '#85B8FF',
+  debit: '#C3A1F2',
+  netbanking: '#F0C66F',
+  cash: '#F28F79',
+};
+const axisColor = '#83968E';
+const gridColor = 'rgba(129, 153, 141, .14)';
+const compactCurrency = (amount) => new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  notation: 'compact',
+  maximumFractionDigits: 1,
+}).format(amount);
+
+const ChartTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="analysis-tooltip">
+      {label && <p className="analysis-tooltip-label">{label}</p>}
+      {payload.map((entry, index) => (
+        <p key={`${entry.dataKey || entry.name}-${index}`} style={{ color: entry.color || entry.payload?.color }}>
+          <span>{entry.name || entry.payload?.name}</span>
+          <strong>{formatINR(entry.value)}</strong>
+        </p>
+      ))}
+    </div>
+  );
+};
+
+const EmptyChart = ({ message }) => (
+  <div className="analysis-empty">
+    <span><TrendingUp className="w-5 h-5" /></span>
+    <p>{message}</p>
+  </div>
+);
+
+const ChartLegend = ({ items }) => (
+  <ul className="analysis-legend">
+    {items.map((item) => (
+      <li key={item.id} title={item.name}>
+        <span style={{ backgroundColor: item.color }} />
+        <span>{item.name}</span>
+      </li>
+    ))}
+  </ul>
+);
+
+const AnalysisPanel = ({ number, title, subtitle, icon: Icon, children, className = '' }) => (
+  <section className={`analysis-panel ${className}`}>
+    <header className="analysis-panel-header">
+      <span className="analysis-panel-icon"><Icon className="w-4 h-4" /></span>
+      <div className="analysis-panel-copy">
+        <span className="analysis-panel-kicker">{number} / ANALYSIS</span>
+        <h3>{title}</h3>
+        <p>{subtitle}</p>
+      </div>
+    </header>
+    {children}
+  </section>
+);
 
 export const AnalyticsCharts = () => {
   const { transactions } = useExpense();
-  const [activeTab, setActiveTab] = useState('trend'); // 'trend' | 'category' | 'monthly' | 'payment'
 
-  // Prepare Data 1: Income vs Expense Trend timeline (Grouped by date)
   const dateMap = {};
-  transactions.forEach((t) => {
-    const d = t.date || 'Unknown';
-    if (!dateMap[d]) {
-      dateMap[d] = { date: d, income: 0, expense: 0 };
-    }
-    if (t.type === 'income') {
-      dateMap[d].income += Number(t.amount);
-    } else {
-      dateMap[d].expense += Number(t.amount);
-    }
+  transactions.forEach((transaction) => {
+    const dateKey = (transaction.date || '').slice(0, 10);
+    const parsedDate = new Date(`${dateKey}T00:00:00`);
+    if (!dateKey || Number.isNaN(parsedDate.getTime())) return;
+    if (!dateMap[dateKey]) dateMap[dateKey] = { dateKey, income: 0, expense: 0 };
+    const amount = Number(transaction.amount) || 0;
+    if (transaction.type === 'income') dateMap[dateKey].income += amount;
+    else if (transaction.type === 'expense') dateMap[dateKey].expense += amount;
   });
 
   const trendData = Object.values(dateMap)
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
-    .slice(-10)
-    .map((item) => ({
-      ...item,
-      formattedDate: new Date(item.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+    .sort((a, b) => a.dateKey.localeCompare(b.dateKey))
+    .slice(-14)
+    .map((day) => ({
+      ...day,
+      date: new Date(`${day.dateKey}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
     }));
 
-  // Prepare Data 2: Category Breakdown Donut Chart
-  const categoryMap = {};
-  transactions
-    .filter((t) => t.type === 'expense')
-    .forEach((t) => {
-      categoryMap[t.category] = (categoryMap[t.category] || 0) + Number(t.amount);
-    });
-
-  const categoryData = Object.entries(categoryMap).map(([catKey, total]) => {
-    const meta = CATEGORIES.find((c) => c.id === catKey) || { name: catKey, color: '#E2E8F0' };
-    return {
-      name: meta.name,
-      value: total,
-      color: meta.color,
-    };
-  });
-
-  // Prepare Data 3: Monthly Expenses Bar Chart
-  const monthMap = {};
-  transactions
-    .filter((t) => t.type === 'expense')
-    .forEach((t) => {
-      const monthKey = (t.date || '').substring(0, 7);
-      if (monthKey) {
-        monthMap[monthKey] = (monthMap[monthKey] || 0) + Number(t.amount);
-      }
-    });
-
-  const monthlyData = Object.entries(monthMap)
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([m, total]) => {
-      const dateObj = new Date(`${m}-01`);
-      const monthLabel = dateObj.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
-      return { month: monthLabel, amount: total };
-    });
-
-  // Prepare Data 4: Payment Method Breakdown Chart
-  const paymentMap = {};
-  transactions
-    .filter((t) => t.type === 'expense')
-    .forEach((t) => {
-      const pm = t.paymentMethod || 'upi';
-      paymentMap[pm] = (paymentMap[pm] || 0) + Number(t.amount);
-    });
-
-  const paymentColors = {
-    upi: '#4F46E5',
-    credit: '#3B82F6',
-    debit: '#64748B',
-    netbanking: '#10B981',
-    cash: '#F59E0B',
-  };
-
-  const paymentData = Object.entries(paymentMap).map(([pmKey, total]) => {
-    const pmMeta = PAYMENT_METHODS.find((pm) => pm.id === pmKey) || { name: pmKey };
-    return {
-      name: pmMeta.name,
-      value: total,
-      color: paymentColors[pmKey] || '#E2E8F0',
-    };
-  });
-
-  // Custom Glassmorphism Tooltip with Palette Styling
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="glass-card p-3 text-xs shadow-xl border-[#E2E8F0]/40 bg-[#FFFFFF]/95">
-          <p className="font-bold text-[#0F172A] mb-1">{label}</p>
-          {payload.map((entry, index) => (
-            <p key={`item-${index}`} style={{ color: entry.color || entry.fill }} className="font-semibold">
-              {entry.name}: {formatINR(entry.value)}
-            </p>
-          ))}
-        </div>
-      );
+  const categoryTotals = {};
+  const paymentTotals = {};
+  const monthTotals = {};
+  transactions.filter((transaction) => transaction.type === 'expense').forEach((transaction) => {
+    const amount = Number(transaction.amount) || 0;
+    const categoryId = transaction.category || 'other';
+    const paymentId = transaction.paymentMethod || 'unspecified';
+    const monthKey = (transaction.date || '').slice(0, 7);
+    categoryTotals[categoryId] = (categoryTotals[categoryId] || 0) + amount;
+    paymentTotals[paymentId] = (paymentTotals[paymentId] || 0) + amount;
+    const monthNumber = Number(monthKey.slice(5, 7));
+    if (/^\d{4}-\d{2}$/.test(monthKey) && monthNumber >= 1 && monthNumber <= 12) {
+      monthTotals[monthKey] = (monthTotals[monthKey] || 0) + amount;
     }
-    return null;
-  };
+  });
 
-  // Zero state when no transactions exist
-  if (transactions.length === 0) {
-    return (
-      <div id="analytics" className="glass-card p-5 mb-8 scroll-mt-24">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#E2E8F0]/30">
-          <div>
-            <h3 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-[#4F46E5]" />
-              Interactive Financial Analytics
-            </h3>
-            <p className="text-xs text-[#64748B]">4 distinct visualization views analyzing cash flow & habits</p>
-          </div>
+  const categoryData = Object.entries(categoryTotals)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, value], index) => ({
+      id,
+      name: CATEGORIES.find((category) => category.id === id)?.name || id,
+      value,
+      color: chartColors[index % chartColors.length],
+    }));
 
-          {/* Tab Controls (disabled in zero state) */}
-          <div className="flex flex-wrap items-center gap-1 bg-[#F8FAFC] p-1 rounded-xl border border-[#E2E8F0]/40 text-xs opacity-50 pointer-events-none">
-            <button className="px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 text-[#0F172A]">
-              <TrendingUp className="w-3.5 h-3.5" />
-              Timeline
-            </button>
-            <button className="px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 text-[#0F172A]">
-              <PieIcon className="w-3.5 h-3.5" />
-              Category
-            </button>
-            <button className="px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 text-[#0F172A]">
-              <BarChart2 className="w-3.5 h-3.5" />
-              Monthly
-            </button>
-            <button className="px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 text-[#0F172A]">
-              <CreditCard className="w-3.5 h-3.5" />
-              Payment Mode
-            </button>
-          </div>
-        </div>
+  const monthlyData = Object.entries(monthTotals)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, amount]) => ({
+      month: new Date(`${month}-01T00:00:00`).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
+      amount,
+    }));
 
-        <div className="zero-state py-16">
-          <div className="zero-state-icon">
-            <BarChart3 className="w-8 h-8" />
-          </div>
-          <h4 className="zero-state-title">No Analytics Yet</h4>
-          <p className="zero-state-description">
-            Once you add transactions, you'll see beautiful interactive charts here —
-            spending trends, category breakdowns, and payment insights.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const paymentData = Object.entries(paymentTotals)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, value]) => ({
+      id,
+      name: PAYMENT_METHODS.find((method) => method.id === id)?.name || (id === 'unspecified' ? 'Not specified' : id),
+      value,
+      color: paymentColors[id] || '#9BAAA3',
+    }));
+
+  const axisProps = { stroke: axisColor, tickLine: false, axisLine: false, tick: { fill: axisColor, fontSize: 11 } };
+  const chartMargin = { top: 12, right: 10, left: 4, bottom: 2 };
 
   return (
-    <div id="analytics" className="glass-card p-5 mb-8 scroll-mt-24">
-      {/* Chart Header & Navigation Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#E2E8F0]/30">
+    <div className="analytics-report">
+      <header className="analytics-report-heading">
         <div>
-          <h3 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-[#4F46E5]" />
-            Interactive Financial Analytics
-          </h3>
-          <p className="text-xs text-[#64748B]">4 distinct visualization views analyzing cash flow & habits</p>
+          <span className="analysis-panel-kicker">YOUR MONEY, IN FOCUS</span>
+          <h2>Financial overview</h2>
+          <p>Four views of your recorded income and spending, kept together for an easier read.</p>
         </div>
+        <div className="analytics-record-count"><Wallet className="w-4 h-4" />{transactions.length} records</div>
+      </header>
 
-        {/* Tab Controls */}
-        <div className="flex flex-wrap items-center gap-1 bg-[#F8FAFC] p-1 rounded-xl border border-[#E2E8F0]/40 text-xs">
-          <button
-            onClick={() => setActiveTab('trend')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${activeTab === 'trend'
-              ? 'bg-[#4F46E5] text-[#FFFFFF] shadow-md'
-              : 'text-[#0F172A] hover:bg-[#E2E8F0]/20'
-              }`}
-          >
-            <TrendingUp className="w-3.5 h-3.5" />
-            Timeline
-          </button>
-          <button
-            onClick={() => setActiveTab('category')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${activeTab === 'category'
-              ? 'bg-[#4F46E5] text-[#FFFFFF] shadow-md'
-              : 'text-[#0F172A] hover:bg-[#E2E8F0]/20'
-              }`}
-          >
-            <PieIcon className="w-3.5 h-3.5" />
-            Category
-          </button>
-          <button
-            onClick={() => setActiveTab('monthly')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${activeTab === 'monthly'
-              ? 'bg-[#4F46E5] text-[#FFFFFF] shadow-md'
-              : 'text-[#0F172A] hover:bg-[#E2E8F0]/20'
-              }`}
-          >
-            <BarChart2 className="w-3.5 h-3.5" />
-            Monthly
-          </button>
-          <button
-            onClick={() => setActiveTab('payment')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all ${activeTab === 'payment'
-              ? 'bg-[#4F46E5] text-[#FFFFFF] shadow-md'
-              : 'text-[#0F172A] hover:bg-[#E2E8F0]/20'
-              }`}
-          >
-            <CreditCard className="w-3.5 h-3.5" />
-            Payment Mode
-          </button>
-        </div>
-      </div>
+      <div className="analysis-grid">
+        <AnalysisPanel number="01" title="Income & expenses" subtitle="Daily totals across your 14 most recent active dates." icon={TrendingUp}>
+          {trendData.length ? (
+            <div className="analysis-chart">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={trendData} margin={chartMargin}>
+                  <defs>
+                    <linearGradient id="analysisIncome" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#59D99B" stopOpacity={.3} /><stop offset="100%" stopColor="#59D99B" stopOpacity={0} /></linearGradient>
+                    <linearGradient id="analysisExpense" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FF858B" stopOpacity={.24} /><stop offset="100%" stopColor="#FF858B" stopOpacity={0} /></linearGradient>
+                  </defs>
+                  <CartesianGrid stroke={gridColor} vertical={false} />
+                  <XAxis dataKey="date" {...axisProps} minTickGap={18} />
+                  <YAxis {...axisProps} width={60} tickFormatter={compactCurrency} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Area type="monotone" dataKey="income" name="Income" stroke="#59D99B" strokeWidth={2.5} fill="url(#analysisIncome)" activeDot={{ r: 4 }} />
+                  <Area type="monotone" dataKey="expense" name="Expenses" stroke="#FF858B" strokeWidth={2.5} fill="url(#analysisExpense)" activeDot={{ r: 4 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : <EmptyChart message="Add dated transactions to see your daily cash flow." />}
+        </AnalysisPanel>
 
-      {/* Chart Canvas Area */}
-      <div className="h-72 w-full">
-        {activeTab === 'trend' && (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F43F5E" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#F43F5E" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="formattedDate" stroke="#64748B" fontSize={11} tickLine={false} />
-              <YAxis stroke="#64748B" fontSize={11} tickLine={false} tickFormatter={(val) => `₹${val / 1000}k`} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-              <Area type="monotone" dataKey="income" name="Income" stroke="#10B981" strokeWidth={2.5} fillOpacity={1} fill="url(#incomeGrad)" />
-              <Area type="monotone" dataKey="expense" name="Expense" stroke="#F43F5E" strokeWidth={2.5} fillOpacity={1} fill="url(#expenseGrad)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        )}
+        <AnalysisPanel number="02" title="Spending by category" subtitle="How your recorded expenses are distributed." icon={PieIcon}>
+          {categoryData.length ? (
+            <div className="analysis-chart analysis-chart-donut">
+              <div className="analysis-donut-visual">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={categoryData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius="48%" outerRadius="70%" paddingAngle={3} stroke="none">
+                    {categoryData.map((entry) => <Cell key={entry.id} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip content={<ChartTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ChartLegend items={categoryData} />
+            </div>
+          ) : <EmptyChart message="Expense categories will appear once you record an expense." />}
+        </AnalysisPanel>
 
-        {activeTab === 'category' && (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={categoryData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={95}
-                paddingAngle={4}
-                dataKey="value"
-              >
-                {categoryData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} stroke="#F8FAFC" strokeWidth={2} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-            </PieChart>
-          </ResponsiveContainer>
-        )}
+        <AnalysisPanel number="03" title="Monthly expenses" subtitle="Total spending by calendar month." icon={CreditCard}>
+          {monthlyData.length ? (
+            <div className="analysis-chart">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyData} margin={chartMargin}>
+                  <CartesianGrid stroke={gridColor} vertical={false} />
+                  <XAxis dataKey="month" {...axisProps} minTickGap={16} />
+                  <YAxis {...axisProps} width={60} tickFormatter={compactCurrency} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Bar dataKey="amount" name="Expenses" fill="#72B5FF" radius={[6, 6, 0, 0]} maxBarSize={38} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : <EmptyChart message="Monthly spending appears here after you add expenses." />}
+        </AnalysisPanel>
 
-        {activeTab === 'monthly' && (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <XAxis dataKey="month" stroke="#64748B" fontSize={11} tickLine={false} />
-              <YAxis stroke="#64748B" fontSize={11} tickLine={false} tickFormatter={(val) => `₹${val / 1000}k`} />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="amount" name="Monthly Expenses" radius={[6, 6, 0, 0]}>
-                {monthlyData.map((entry, index) => (
-                  <Cell key={`bar-${index}`} fill="#4F46E5" />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-
-        {activeTab === 'payment' && (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={paymentData}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={90}
-                paddingAngle={4}
-                dataKey="value"
-              >
-                {paymentData.map((entry, index) => (
-                  <Cell key={`pm-cell-${index}`} fill={entry.color} stroke="#F8FAFC" strokeWidth={2} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-            </PieChart>
-          </ResponsiveContainer>
-        )}
+        <AnalysisPanel number="04" title="Payment methods" subtitle="Expense totals by the payment method recorded." icon={Wallet}>
+          {paymentData.length ? (
+            <div className="analysis-chart analysis-chart-donut">
+              <div className="analysis-donut-visual">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={paymentData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius="48%" outerRadius="70%" paddingAngle={3} stroke="none">
+                    {paymentData.map((entry) => <Cell key={entry.id} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip content={<ChartTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <ChartLegend items={paymentData} />
+            </div>
+          ) : <EmptyChart message="Payment method insights appear once expenses are recorded." />}
+        </AnalysisPanel>
       </div>
     </div>
   );
